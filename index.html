@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>博盛达电子 - 库存查询</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* 头部 */
+        .header {
+            text-align: center;
+            padding: 20px 0 30px;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .slogan {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* 搜索卡片 */
+        .search-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
+        }
+        
+        /* 标签切换 */
+        .tabs {
+            display: flex;
+            background: #f5f7fa;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.2);
+        }
+        
+        /* 输入区域 */
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            outline: none;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+        }
+        
+        .textarea-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 15px;
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .textarea-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+        }
+        
+        .input-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+        
+        /* 搜索按钮 */
+        .search-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .search-btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        /* 历史搜索 */
+        .history-section {
+            margin-top: 20px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .clear-btn {
+            font-size: 12px;
+            color: #667eea;
+            cursor: pointer;
+        }
+        
+        .history-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .history-tag {
+            padding: 8px 14px;
+            background: #f5f7fa;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .history-tag:active {
+            background: #e8e8e8;
+        }
+        
+        /* 面板切换 */
+        .single-search-panel {
+            display: block;
+        }
+        
+        .batch-search-panel {
+            display: none;
+        }
+        
+        .single-search-panel.hidden {
+            display: none;
+        }
+        
+        .batch-search-panel.show {
+            display: block;
+        }
+        
+        /* 快捷操作 */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .quick-btn {
+            flex: 1;
+            padding: 10px;
+            background: #f5f7fa;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quick-btn:active {
+            background: #e8e8e8;
+        }
+        
+        /* 提示卡片 */
+        .tip-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .tip-card strong {
+            color: #667eea;
+        }
+        
+        /* 批量结果 */
+        .batch-result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
+            display: none;
+        }
+        
+        .batch-result-card.show {
+            display: block;
+        }
+        
+        .batch-item {
+            padding: 14px;
+            background: #f5f7fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .batch-item:active {
+            background: #e8e8e8;
+        }
+        
+        .batch-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .batch-model {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .batch-link {
+            font-size: 13px;
+            color: #667eea;
+        }
+        
+        /* 底部信息 */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* 使用说明 */
+        .guide-section {
+            margin-top: 16px;
+        }
+        
+        .guide-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .guide-list {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.8;
+        }
+        
+        .guide-list li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="logo">博盛达电子</div>
+            <div class="slogan">20年海外渠道 · 停产件现货供应</div>
+        </div>
+        
+        <!-- 使用说明 -->
+        <div class="tip-card">
+            <strong>使用说明：</strong>输入型号后点击搜索，将打开官网查看库存结果。支持单号查询和批量查询。
+        </div>
+        
+        <!-- 搜索卡片 -->
+        <div class="search-card">
+            <!-- 标签切换 -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('single')">单号查询</div>
+                <div class="tab" onclick="switchTab('batch')">批量查询</div>
+            </div>
+            
+            <!-- 单号搜索 -->
+            <div id="singleSearchPanel" class="single-search-panel">
+                <div class="input-group">
+                    <label class="input-label">元器件型号</label>
+                    <input type="text" id="singleInput" class="search-input" placeholder="请输入型号，如：BCM88270CA1IFSBG" autocomplete="off">
+                    <div class="input-hint">支持模糊搜索，输入部分型号即可</div>
+                </div>
+            </div>
+            
+            <!-- 批量搜索 -->
+            <div id="batchSearchPanel" class="batch-search-panel">
+                <div class="input-group">
+                    <label class="input-label">批量型号输入</label>
+                    <textarea id="batchInput" class="textarea-input" placeholder="每行一个型号，或用逗号/空格分隔&#10;&#10;示例：&#10;BCM88270CA1IFSBG&#10;MCIMX6Q7CVT08AE&#10;EP1C6F256C8N"></textarea>
+                    <div class="input-hint">已输入 <span id="modelCount">0</span> 个型号</div>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="clearBatch()">清空</button>
+                    <button class="quick-btn" onclick="pasteFromClipboard()">粘贴</button>
+                </div>
+            </div>
+            
+            <!-- 搜索按钮 -->
+            <button class="search-btn" onclick="performSearch()">
+                <span>🔍</span>
+                <span>搜索库存</span>
+            </button>
+            
+            <!-- 历史搜索 -->
+            <div class="history-section" id="historySection">
+                <div class="section-title">
+                    <span>最近搜索</span>
+                    <span class="clear-btn" onclick="clearHistory()">清空</span>
+                </div>
+                <div class="history-tags" id="historyTags"></div>
+            </div>
+        </div>
+        
+        <!-- 批量查询结果 -->
+        <div class="batch-result-card" id="batchResultCard">
+            <div class="section-title">点击型号查看库存</div>
+            <div id="batchResultList"></div>
+        </div>
+        
+        <!-- 联系方式 -->
+        <div class="search-card">
+            <div class="guide-section">
+                <div class="guide-title">找不到型号？</div>
+                <div class="guide-list">
+                    <li>📞 电话咨询：<a href="tel:0755-28192187" style="color:#667eea;">0755-28192187</a></li>
+                    <li>📧 邮箱联系：BSD@szbsd.com.cn</li>
+                    <li>🌐 访问官网：<a href="http://www.szbsd.com.cn" target="_blank" style="color:#667eea;">www.szbsd.com.cn</a></li>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部 -->
+        <div class="footer">
+            <a href="http://www.szbsd.com.cn/" target="_blank">访问官网</a> · 
+            <a href="tel:0755-28192187">电话咨询</a>
+        </div>
+    </div>
+    
+    <script>
+        // 官网搜索地址
+        const SEARCH_URL = 'http://www.szbsd.com.cn/search?goods_name=';
+        
+        // 搜索历史
+        let searchHistory = JSON.parse(localStorage.getItem('bsdSearchHistory') || '[]');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHistory();
+            initInputListeners();
+        });
+        
+        // 切换标签
+        function switchTab(type) {
+            const tabs = document.querySelectorAll('.tab');
+            const singlePanel = document.getElementById('singleSearchPanel');
+            const batchPanel = document.getElementById('batchSearchPanel');
+            const batchResultCard = document.getElementById('batchResultCard');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            if (type === 'single') {
+                tabs[0].classList.add('active');
+                singlePanel.classList.remove('hidden');
+                batchPanel.classList.remove('show');
+                batchResultCard.classList.remove('show');
+            } else {
+                tabs[1].classList.add('active');
+                singlePanel.classList.add('hidden');
+                batchPanel.classList.add('show');
+            }
+        }
+        
+        // 初始化输入监听
+        function initInputListeners() {
+            // 单号输入 - 回车搜索
+            document.getElementById('singleInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // 批量输入 - 实时统计
+            document.getElementById('batchInput').addEventListener('input', function() {
+                const models = parseModels(this.value);
+                document.getElementById('modelCount').textContent = models.length;
+            });
+        }
+        
+        // 解析型号
+        function parseModels(text) {
+            if (!text.trim()) return [];
+            return text
+                .split(/[\n,;，；\s]+/)
+                .map(m => m.trim().toUpperCase())
+                .filter(m => m.length > 0);
+        }
+        
+        // 执行搜索
+        function performSearch() {
+            const isBatchMode = document.getElementById('batchSearchPanel').classList.contains('show');
+            
+            if (isBatchMode) {
+                const batchInput = document.getElementById('batchInput').value;
+                const models = parseModels(batchInput);
+                
+                if (models.length === 0) {
+                    alert('请输入至少一个型号');
+                    return;
+                }
+                
+                // 批量查询
+                if (models.length === 1) {
+                    // 只有一个型号，直接跳转
+                    searchOnWebsite(models[0]);
+                } else {
+                    // 多个型号，显示列表
+                    showBatchResults(models);
+                }
+                
+                // 保存历史
+                models.forEach(m => addToHistory(m));
+            } else {
+                const singleInput = document.getElementById('singleInput').value.trim();
+                
+                if (!singleInput) {
+                    alert('请输入元器件型号');
+                    return;
+                }
+                
+                const model = singleInput.toUpperCase();
+                searchOnWebsite(model);
+                addToHistory(model);
+            }
+        }
+        
+        // 在官网搜索
+        function searchOnWebsite(model) {
+            const url = SEARCH_URL + encodeURIComponent(model);
+            window.open(url, '_blank');
+        }
+        
+        // 显示批量查询结果
+        function showBatchResults(models) {
+            const batchResultCard = document.getElementById('batchResultCard');
+            const batchResultList = document.getElementById('batchResultList');
+            
+            batchResultCard.classList.add('show');
+            
+            let html = models.map(model => `
+                <div class="batch-item" onclick="searchOnWebsite('${model}')">
+                    <div class="batch-model">${escapeHtml(model)}</div>
+                    <div class="batch-link">查看库存 →</div>
+                </div>
+            `).join('');
+            
+            batchResultList.innerHTML = html;
+        }
+        
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 添加到历史
+        function addToHistory(model) {
+            const index = searchHistory.indexOf(model);
+            if (index > -1) {
+                searchHistory.splice(index, 1);
+            }
+            
+            searchHistory.unshift(model);
+            
+            if (searchHistory.length > 10) {
+                searchHistory = searchHistory.slice(0, 10);
+            }
+            
+            localStorage.setItem('bsdSearchHistory', JSON.stringify(searchHistory));
+            renderHistory();
+        }
+        
+        // 渲染历史
+        function renderHistory() {
+            const historyTags = document.getElementById('historyTags');
+            const historySection = document.getElementById('historySection');
+            
+            if (searchHistory.length === 0) {
+                historySection.style.display = 'none';
+                return;
+            }
+            
+            historySection.style.display = 'block';
+            historyTags.innerHTML = searchHistory.map(model => 
+                `<div class="history-tag" onclick="quickSearch('${escapeHtml(model)}')">${escapeHtml(model)}</div>`
+            ).join('');
+        }
+        
+        // 快速搜索
+        function quickSearch(model) {
+            document.getElementById('singleInput').value = model;
+            switchTab('single');
+            searchOnWebsite(model);
+        }
+        
+        // 清空历史
+        function clearHistory() {
+            searchHistory = [];
+            localStorage.removeItem('bsdSearchHistory');
+            renderHistory();
+        }
+        
+        // 清空批量输入
+        function clearBatch() {
+            document.getElementById('batchInput').value = '';
+            document.getElementById('modelCount').textContent = '0';
+            document.getElementById('batchResultCard').classList.remove('show');
+        }
+        
+        // 从剪贴板粘贴
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('batchInput').value = text;
+                const models = parseModels(text);
+                document.getElementById('modelCount').textContent = models.length;
+            } catch (err) {
+                alert('无法访问剪贴板，请手动粘贴');
+            }
+        }
+    </script>
+</body>
+</html>
